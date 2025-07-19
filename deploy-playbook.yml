@@ -9,7 +9,7 @@
         state: latest
 
     - name: Install Docker
-      amazon.aws.aws_package:
+      package:
         name: docker
         state: present
 
