@@ -2,33 +2,30 @@ pipeline {
   agent any
 
   environment {
-    IMAGE_NAME = 'liamachihon/hello-liam'
-    VERSION = 'latest'
+    DOCKER_IMAGE = "liamachihon/hello-liam:latest"
   }
 
   stages {
     stage('Build Docker Image') {
       steps {
-        script {
-          sh 'docker build -t $IMAGE_NAME:$VERSION .'
-        }
+        sh 'docker build -t $DOCKER_IMAGE .'
       }
     }
 
-    stage('Push to DockerHub') {
+    stage('Login to DockerHub & Push') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-          script {
-            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-            sh 'docker push $IMAGE_NAME:$VERSION'
-          }
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh '''
+            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+            docker push $DOCKER_IMAGE
+          '''
         }
       }
     }
 
     stage('Deploy with Ansible') {
       steps {
-        sh 'ansible-playbook -i "your-server-ip," -u ec2-user --private-key ~/path/to/liam-key.pem deploy-playbook.yml'
+        sh 'ansible-playbook deploy-playbook.yml'
       }
     }
   }
