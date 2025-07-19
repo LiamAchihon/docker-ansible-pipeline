@@ -30,13 +30,19 @@ pipeline {
       }
     }
 
+    stage('Fix SSH Known Hosts') {
+      steps {
+        sh 'mkdir -p ~/.ssh && touch ~/.ssh/known_hosts'
+      }
+    }
+
     stage('Deploy with Ansible') {
       steps {
-        sh 'ssh-keyscan 3.84.4.147 >> ~/.ssh/known_hosts'
         sh 'ansible-playbook -i inventory deploy-playbook.yml'
       }
     }
   }
 }
+
 
 
