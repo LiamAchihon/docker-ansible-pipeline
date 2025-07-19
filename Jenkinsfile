@@ -2,22 +2,28 @@ pipeline {
   agent any
 
   environment {
-    DOCKER_IMAGE = "liamachihon/hello-liam:latest"
+    DOCKERHUB_USER = 'liamachihon'
   }
 
   stages {
-    stage('Build Docker Image') {
+    stage('Clone Repo') {
       steps {
-        sh 'docker build -t $DOCKER_IMAGE .'
+        checkout scm
       }
     }
 
-    stage('Login to DockerHub & Push') {
+    stage('Build Docker Image') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        sh 'docker build -t $DOCKERHUB_USER/hello-liam:latest .'
+      }
+    }
+
+    stage('Push to DockerHub') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
           sh '''
-            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-            docker push $DOCKER_IMAGE
+            echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+            docker push $DOCKERHUB_USER/hello-liam:latest
           '''
         }
       }
@@ -25,8 +31,11 @@ pipeline {
 
     stage('Deploy with Ansible') {
       steps {
-        sh 'ansible-playbook deploy-playbook.yml'
+        sh '''
+          ansible-playbook -i inventory deploy-playbook.yml
+        '''
       }
     }
   }
 }
+

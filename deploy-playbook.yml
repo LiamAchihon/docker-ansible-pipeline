@@ -1,18 +1,40 @@
-- name: Deploy Docker Container
-  hosts: all
-  become: true
-  vars:
-    docker_image: liamachihon/hello-liam:latest
+- name: Deploy Docker container to EC2
+  hosts: web
+  become: yes
+
   tasks:
-    - name: Pull Docker image
-      community.docker.docker_image:
-        name: "{{ docker_image }}"
+    - name: Update system packages
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install Docker
+      amazon.aws.aws_package:
+        name: docker
+        state: present
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: yes
+
+    - name: Pull Docker image from Docker Hub
+      docker_image:
+        name: liamachihon/hello-liam
+        source: pull
 
     - name: Run Docker container
-      community.docker.docker_container:
+      docker_container:
         name: hello-liam
-        image: "{{ docker_image }}"
-        ports:
-          - "80:3000"
+        image: liamachihon/hello-liam
         state: started
         restart_policy: always
+        ports:
+          - "80:3000"

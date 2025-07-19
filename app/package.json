@@ -1,8 +1,11 @@
 {
   "name": "hello-liam",
   "version": "1.0.0",
+  "description": "Simple Node app for Liam",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
-  }
+  },
+  "author": "Liam",
+  "license": "ISC"
 }
