@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKERHUB_USER = credentials('dockerhub-username')
-        DOCKERHUB_PASS = credentials('dockerhub-password')
-    }
-
     stages {
         stage('Clone Repo') {
             steps {
@@ -21,9 +16,9 @@ pipeline {
 
         stage('Push to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-login', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS_PSW')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-login', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
                     sh '''
-                        echo $DOCKERHUB_PASS_PSW | docker login -u $DOCKERHUB_USER --password-stdin
+                        echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
                         docker push liamachihon/hello-liam:latest
                     '''
                 }
@@ -33,9 +28,9 @@ pipeline {
         stage('Fix SSH Known Hosts') {
             steps {
                 sh '''
-                    mkdir -p /var/lib/jenkins/.ssh
-                    touch /var/lib/jenkins/.ssh/known_hosts
-                    ssh-keyscan -H 3.84.4.147 >> /var/lib/jenkins/.ssh/known_hosts
+                    mkdir -p ~/.ssh
+                    touch ~/.ssh/known_hosts
+                    ssh-keyscan -H 3.84.4.147 >> ~/.ssh/known_hosts
                 '''
             }
         }
