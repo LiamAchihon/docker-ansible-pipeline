@@ -2,9 +2,10 @@ FROM node:18
 
 WORKDIR /app
 
-COPY app/ . 
-COPY package.json .
-
+COPY app/package.json .
 RUN npm install
 
+COPY app/index.js .
+
+EXPOSE 3000
 CMD ["node", "index.js"]
